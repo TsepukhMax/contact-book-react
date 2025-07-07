@@ -1,10 +1,11 @@
 import './App.css'
+import ContactBookComponent from './components/contact-book/contact-book.component'
 
 function App() {
 
   return (
     <>
-      <h1>Vite + React</h1>
+    < ContactBookComponent />
     </>
   )
 }
