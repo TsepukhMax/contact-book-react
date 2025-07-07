@@ -66,6 +66,6 @@ export function useContacts() {
   return {
     shortContacts,
     selectedContact,
-    selectContact
+    selectContact   
   }
 }
