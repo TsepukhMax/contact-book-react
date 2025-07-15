@@ -1,8 +1,8 @@
 import React from 'react'
-import './contact-item.component.scss'
+import './contact-item.scss'
 import { IContactItemProps } from '../../interfaces/index'
 
-function ContactItemComponent({ firstName, lastName, isSelected, onClick }: IContactItemProps) {
+function ContactItem({ firstName, lastName, isSelected, onClick }: IContactItemProps) {
   return (
     <div 
       className={`contact-item ${isSelected ? 'selected' : ''}`}
@@ -13,4 +13,4 @@ function ContactItemComponent({ firstName, lastName, isSelected, onClick }: ICon
   )
 } 
 
-export default ContactItemComponent
+export default ContactItem

@@ -1,18 +1,20 @@
 import React from 'react'
 import { useRef } from 'react'
-import searchIcon from '../../assets/img/search.jpg'
-import './contact-search.component.scss'  
+import searchIcon from '../../assets/img/search.svg'
+import './contact-search.scss'  
 
-function ContactSearchComponent() {
+function ContactSearch({ onSearchTermChange }: { onSearchTermChange: (term: string) => void }) {
   const searchInputRef = useRef<HTMLInputElement>(null)
 
   const onInput = () => {
-    const value = searchInputRef.current?.value
+    const value = searchInputRef.current?.value || ''
+    onSearchTermChange(value)
   }
 
   const onReset = () => {
-    if (searchInputRef.current) {
+    if (searchInputRef.current) { 
       searchInputRef.current.value = ''
+      onSearchTermChange('')
     }
   }
 
@@ -31,4 +33,4 @@ function ContactSearchComponent() {
   )
 }
 
-export default ContactSearchComponent
+export default ContactSearch

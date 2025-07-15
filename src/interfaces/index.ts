@@ -20,15 +20,6 @@ export interface IContactItemProps {
   onClick: () => void 
 }
 
-export interface IContact {
-  id: number;
-  firstName: string;
-  lastName: string;
-  phoneNumber: string;
-  email: string;
-  notes: string;
-}
-
 export interface IContactDetailProps {
   contact: IContact | null;
 }

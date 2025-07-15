@@ -6,12 +6,10 @@ body {
   font-family: "Roboto", sans-serif;
   font-size: 18px;
   color: black;
-  background-color: white;
   overflow: hidden;
 }
 
 button {
-  margin: 10px 0 0 10px;
   padding: 8px 16px;
   border: none;
   background-color: black;

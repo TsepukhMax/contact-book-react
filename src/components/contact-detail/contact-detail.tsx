@@ -1,8 +1,8 @@
 import React from 'react'
-import './contact-detail.component.scss'
+import './contact-detail.scss'
 import { IContactDetailProps } from '../../interfaces/index'
 
-function ContactDetailComponent({ contact }: IContactDetailProps) {
+function ContactDetail({ contact }: IContactDetailProps) {
   if (!contact) return null
 
   return (
@@ -17,4 +17,4 @@ function ContactDetailComponent({ contact }: IContactDetailProps) {
   )
 }
 
-export default ContactDetailComponent
+export default ContactDetail
