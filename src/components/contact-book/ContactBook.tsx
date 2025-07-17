@@ -1,8 +1,8 @@
 import React, { useEffect, useMemo, useState } from 'react'
 import './contact-book.scss'
-import ContactSearch from '../contact-search/contact-search'
-import ContactItem from '../contact-item/contact-item'
-import ContactDetail from '../contact-detail/contact-detail'
+import ContactSearch from '../contact-search/ContactSearch'
+import ContactItem from '../contact-item/ContactItem'
+import ContactDetail from '../contact-detail/ContactDetail'
 import { IContact } from '../../interfaces'
 
 function ContactBook() {
@@ -11,7 +11,7 @@ function ContactBook() {
   const [searchTerm, setSearchTerm] = useState<string>('')
 
   useEffect(() => {
-    fetch('http://localhost:3001/contacts')
+    fetch('http://localhost:3001/contacts') 
       .then(res => res.json())
       .then(data => setContacts(data))
       .catch(err => console.error('Error loading contacts', err))
