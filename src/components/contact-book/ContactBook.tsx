@@ -3,55 +3,58 @@ import './contact-book.scss'
 import ContactSearch from '../contact-search/ContactSearch'
 import ContactItem from '../contact-item/ContactItem'
 import ContactDetail from '../contact-detail/ContactDetail'
-import { IContact } from '../../interfaces'
+import { IContact, IContactShort } from '../../interfaces'
+
+const baseUrl = 'http://localhost:8080/contacts'
 
 function ContactBook() {
-  const [contacts, setContacts] = useState<IContact[]>([])
-  const [selectedId, setSelectedId] = useState<number | null>(null)
+  const [shortContacts, setShortContacts] = useState<IContactShort[]>([])
+  const [selectedContact, setSelectedContact] = useState<IContact | null>(null)
   const [searchTerm, setSearchTerm] = useState<string>('')
 
   useEffect(() => {
-    fetch('http://localhost:3001/contacts') 
+    fetch(baseUrl)
       .then(res => res.json())
-      .then(data => setContacts(data))
-      .catch(err => console.error('Error loading contacts', err))
+      .then(data => setShortContacts(data))
+      .catch(err => console.error('Error loading contacts list', err))
   }, [])
+
+  const handleSelectContact = (id: number) => {
+    fetch(`${baseUrl}/${id}`)
+      .then(res => res.json())
+      .then(data => setSelectedContact(data))
+      .catch(err => console.error('Error loading contact by ID', err))
+  }
 
   const filteredContacts = useMemo(() => {
     const normalized = searchTerm.trim().toUpperCase()
-    if (!normalized) return contacts
+    let filtered = shortContacts
+
+    if (normalized) {
+      filtered = shortContacts.filter(contact => {
+        const fullName = `${contact.firstName} ${contact.lastName}`.toUpperCase()
+        return fullName.includes(normalized)
+      })
+    }
   
-    return contacts.filter(contact => {
-      const fullName = `${contact.firstName} ${contact.lastName}`.toUpperCase()
-      return fullName.includes(normalized)
-    })
-  }, [searchTerm, contacts])  
+    return filtered.sort((a, b) => a.id - b.id)
+  }, [searchTerm, shortContacts])
 
-  const shortContacts = useMemo(() => {
-    return filteredContacts.map(({ id, firstName, lastName }) => ({
-      id, firstName, lastName
-    }))
-  }, [filteredContacts])
-
-  const selectedContact = useMemo(() => {
-    return contacts.find(c => c.id === selectedId) || null
-  }, [selectedId, contacts])
-
-  const selectContact = (id: number) => {
-    setSelectedId(id)
-  }
+    const handleSearchTermChange = (term: string) => {
+      setSearchTerm(term)
+    }
 
   return (
     <div className='container'>
       <div className='left-panel'>
-        <ContactSearch onSearchTermChange={setSearchTerm} />
-        {shortContacts.map(contact => (
+        <ContactSearch onSearchTermChange={handleSearchTermChange} />
+        {filteredContacts.map(contact => (
           <ContactItem
             key={contact.id}
             firstName={contact.firstName}
             lastName={contact.lastName}
             isSelected={selectedContact?.id === contact.id}
-            onClick={() => selectContact(contact.id)}
+            onClick={() => handleSelectContact(contact.id)}
           />
         ))}
       </div>
