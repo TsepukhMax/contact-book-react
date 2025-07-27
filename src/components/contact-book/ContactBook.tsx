@@ -4,6 +4,7 @@ import ContactSearch from '../contact-search/ContactSearch'
 import ContactItem from '../contact-item/ContactItem'
 import ContactDetail from '../contact-detail/ContactDetail'
 import { IContact, IContactShort } from '../../interfaces'
+import axios from 'axios'
 
 const baseUrl = 'http://localhost:8080/contacts'
 
@@ -13,16 +14,14 @@ function ContactBook() {
   const [searchTerm, setSearchTerm] = useState<string>('')
 
   useEffect(() => {
-    fetch(baseUrl)
-      .then(res => res.json())
-      .then(data => setShortContacts(data))
+    axios.get(baseUrl)
+      .then(res => setShortContacts(res.data))
       .catch(err => console.error('Error loading contacts list', err))
   }, [])
 
   const handleSelectContact = (id: number) => {
-    fetch(`${baseUrl}/${id}`)
-      .then(res => res.json())
-      .then(data => setSelectedContact(data))
+    axios.get(`${baseUrl}/${id}`)
+      .then(res => setSelectedContact(res.data))
       .catch(err => console.error('Error loading contact by ID', err))
   }
 
@@ -37,7 +36,9 @@ function ContactBook() {
       })
     }
   
-    return filtered.sort((a, b) => a.id - b.id)
+    return filtered.sort((a, b) => 
+      `${a.firstName} ${a.lastName}`.localeCompare(`${b.firstName} ${b.lastName}`)
+    )
   }, [searchTerm, shortContacts])
 
     const handleSearchTermChange = (term: string) => {
