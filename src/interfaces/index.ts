@@ -21,5 +21,5 @@ export interface IContactItemProps {
 }
 
 export interface IContactDetailProps {
-  contact: IContact | null;
+  contact: IContact;
 }

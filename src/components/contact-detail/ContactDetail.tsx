@@ -1,14 +1,13 @@
 import React from 'react'
 import './contact-detail.scss'
 import { IContactDetailProps } from '../../interfaces/index'
+import { getFullName } from '../../utils'
 
 function ContactDetail({ contact }: IContactDetailProps) {
-  if (!contact) return null
-
   return (
     <div className="contact-detail">
       <h2>Contact Details</h2>
-      <div className="detail-row"><span>Full Name:</span> {contact.firstName} {contact.lastName}</div>
+      <div className="detail-row"><span>Full Name:</span> {getFullName(contact.firstName, contact.lastName)}</div>
       <div className="detail-row"><span>Phone Number:</span> {contact.phoneNumber}</div>
       <div className="detail-row"><span>Email:</span> {contact.email}</div>
       <div className="detail-row"><span>Notes:</span> {contact.notes}</div>

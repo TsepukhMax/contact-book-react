@@ -1,6 +1,7 @@
 import React from 'react'
 import './contact-item.scss'
 import { IContactItemProps } from '../../interfaces/index'
+import { getFullName } from '../../utils'
 
 function ContactItem({ firstName, lastName, isSelected, onClick }: IContactItemProps) {
   return (
@@ -8,7 +9,7 @@ function ContactItem({ firstName, lastName, isSelected, onClick }: IContactItemP
       className={`contact-item ${isSelected ? 'selected' : ''}`}
       onClick={onClick}
     >
-    <span className="contact-name">{firstName} {lastName}</span>
+    <span className="contact-name">{getFullName(firstName, lastName)}</span>
   </div>
   )
 } 

@@ -4,6 +4,7 @@ import ContactSearch from '../contact-search/ContactSearch'
 import ContactItem from '../contact-item/ContactItem'
 import ContactDetail from '../contact-detail/ContactDetail'
 import { IContact, IContactShort } from '../../interfaces'
+import { getFullName } from '../../utils'
 import axios from 'axios'
 
 const baseUrl = 'http://localhost:8080/contacts'
@@ -31,13 +32,13 @@ function ContactBook() {
 
     if (normalized) {
       filtered = shortContacts.filter(contact => {
-        const fullName = `${contact.firstName} ${contact.lastName}`.toUpperCase()
+        const fullName = getFullName(contact.firstName, contact.lastName).toUpperCase()
         return fullName.includes(normalized)
       })
     }
   
     return filtered.sort((a, b) => 
-      `${a.firstName} ${a.lastName}`.localeCompare(`${b.firstName} ${b.lastName}`)
+      getFullName(a.firstName, a.lastName).localeCompare(getFullName(b.firstName, b.lastName))
     )
   }, [searchTerm, shortContacts])
 
@@ -61,7 +62,13 @@ function ContactBook() {
       </div>
 
       <div className='right-panel'>
-        <ContactDetail contact={selectedContact} />
+        {selectedContact ? (
+          <ContactDetail contact={selectedContact} />
+        ) : (
+          <div className="no-contact-selected">
+            Select contact to see detailed information
+          </div>
+        )}
       </div>
     </div>
   )
