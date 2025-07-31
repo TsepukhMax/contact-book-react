@@ -7,13 +7,15 @@ function ContactSearch({ onSearchTermChange }: { onSearchTermChange: (term: stri
   const searchInputRef = useRef<HTMLInputElement>(null)
 
   const onInput = () => {
-    const value = searchInputRef.current!.value || ''
+    const value = searchInputRef.current?.value || ''
     onSearchTermChange(value)
   }
 
   const onReset = () => {
-    searchInputRef.current!.value = ''
-    onSearchTermChange('')
+    if (searchInputRef.current) { 
+      searchInputRef.current.value = ''
+      onSearchTermChange('')
+    }
   }
 
   return (

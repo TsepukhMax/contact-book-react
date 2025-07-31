@@ -22,4 +22,10 @@ export interface IContactItemProps {
 
 export interface IContactDetailProps {
   contact: IContact;
+  onEdit: () => void
+}
+export interface IContactFormProps {
+  contact: IContact
+  onSave: (contact: IContact) => void
+  onCancel: () => void
 }
