@@ -3,23 +3,38 @@ import { useForm } from 'react-hook-form'
 import { IContact, IContactFormProps } from '../../interfaces'
 import './contact-form.scss'
 
-function ContactForm({ contact, onSave, onCancel }: IContactFormProps) {
+function ContactForm({ mode, contact, onSave, onCancel }: IContactFormProps) {
+  const defaultValues = mode === 'create' ? {
+    firstName: '',
+    lastName: '',
+    phoneNumber: '',
+    email: '',
+    notes: ''
+  } : contact
+  
   const {
     register,
     handleSubmit,
     formState: { errors }
   } = useForm<IContact>({
-    defaultValues: contact
+    defaultValues
   })
 
   const onSubmit = (data: IContact) => {
-    onSave({ ...data, id: contact.id })
+    if (mode === 'create') {
+      onSave(data)
+    } else {
+      if (contact) {
+        onSave({ ...data, id: contact.id })
+      }
+    }
   }
 
   return (
     <div className="contact-form">
-      <h2>Edit Contact</h2>
+      <h2>{mode === 'create' ? 'Add New Contact' : 'Edit Contact'}</h2>
       <form onSubmit={handleSubmit(onSubmit)}>
+
         <div className="form-group">
           <label htmlFor="firstName">First Name:</label>
           <input
@@ -64,7 +79,7 @@ function ContactForm({ contact, onSave, onCancel }: IContactFormProps) {
             {...register('phoneNumber', { 
               required: 'Phone number is required',
               pattern: {
-                value: /^[\d+]+$/,
+                value: /^\+?\d+$/,
                 message: 'Only numbers and + allowed'
               }
             })}
@@ -111,4 +126,4 @@ function ContactForm({ contact, onSave, onCancel }: IContactFormProps) {
   )
 }
 
-export default ContactForm
+export default React.memo(ContactForm)

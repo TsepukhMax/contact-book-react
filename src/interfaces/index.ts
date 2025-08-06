@@ -17,15 +17,18 @@ export interface IContactItemProps {
   firstName: string
   lastName: string
   isSelected: boolean
-  onClick: () => void 
+  contactId: number
+  onSelect: (contactId: number) => void
 }
 
 export interface IContactDetailProps {
   contact: IContact;
-  onEdit: () => void
+  onEdit: () => void;
+  onDelete: (contactId: number) => void;
 }
 export interface IContactFormProps {
-  contact: IContact
+  mode: 'create' | 'edit'
+  contact?: IContact
   onSave: (contact: IContact) => void
   onCancel: () => void
 }

@@ -33,4 +33,4 @@ function ContactSearch({ onSearchTermChange }: { onSearchTermChange: (term: stri
   )
 }
 
-export default ContactSearch
+export default React.memo(ContactSearch)

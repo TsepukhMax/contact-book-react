@@ -3,15 +3,15 @@ import './contact-item.scss'
 import { IContactItemProps } from '../../interfaces/index'
 import { getFullName } from '../../utils'
 
-function ContactItem({ firstName, lastName, isSelected, onClick }: IContactItemProps) {
+function ContactItem({ firstName, lastName, isSelected, contactId, onSelect }: IContactItemProps) {
   return (
     <div 
       className={`contact-item ${isSelected ? 'selected' : ''}`}
-      onClick={onClick}
+      onClick={() => onSelect(contactId)}
     >
     <span className="contact-name">{getFullName(firstName, lastName)}</span>
   </div>
   )
 } 
 
-export default ContactItem
+export default React.memo(ContactItem)

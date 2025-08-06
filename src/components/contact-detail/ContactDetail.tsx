@@ -3,14 +3,19 @@ import './contact-detail.scss'
 import { IContactDetailProps } from '../../interfaces/index'
 import { getFullName } from '../../utils'
 
-function ContactDetail({ contact, onEdit }: IContactDetailProps) {
+function ContactDetail({ contact, onEdit, onDelete }: IContactDetailProps) {
   return (
     <div className="contact-detail">
       <div className="contact-detail-header">
         <h2>Contact Details</h2>
-        <button className="btn-edit" onClick={onEdit}>
-          Edit
-        </button>
+        <div className="contact-actions">
+          <button onClick={onEdit}>
+            Edit
+          </button>
+          <button className="btn-delete" onClick={() => onDelete(contact.id)}>
+            Delete
+          </button>
+        </div>
       </div>
       <div className="detail-row"><span>Full Name:</span> {getFullName(contact.firstName, contact.lastName)}</div>
       <div className="detail-row"><span>Phone Number:</span> {contact.phoneNumber}</div>
@@ -20,4 +25,4 @@ function ContactDetail({ contact, onEdit }: IContactDetailProps) {
   )
 }
 
-export default ContactDetail
+export default React.memo(ContactDetail)

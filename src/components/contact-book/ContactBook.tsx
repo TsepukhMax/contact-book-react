@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import './contact-book.scss'
 import ContactSearch from '../contact-search/ContactSearch'
 import ContactItem from '../contact-item/ContactItem'
@@ -15,6 +15,7 @@ function ContactBook() {
   const [selectedContact, setSelectedContact] = useState<IContact | null>(null)
   const [editingContact, setEditingContact] = useState<IContact | null>(null)
   const [searchTerm, setSearchTerm] = useState<string>('')
+  const [isAddingContact, setIsAddingContact] = useState<boolean>(false)
 
   useEffect(() => {
     axios.get(baseUrl)
@@ -22,11 +23,11 @@ function ContactBook() {
       .catch(err => console.error('Error loading contacts list', err))
   }, [])
 
-  const handleSelectContact = (id: number) => {
+  const handleSelectContact = useCallback((id: number) => {
     axios.get(`${baseUrl}/${id}`)
       .then(res => setSelectedContact(res.data))
       .catch(err => console.error('Error loading contact by ID', err))
-  }
+  }, [])
 
   const filteredContacts = useMemo(() => {
     const normalized = searchTerm.trim().toUpperCase()
@@ -44,17 +45,17 @@ function ContactBook() {
     )
   }, [searchTerm, shortContacts])
 
-  const handleSearchTermChange = (term: string) => {
+  const handleSearchTermChange = useCallback((term: string) => {
     setSearchTerm(term)
-  }
+  }, [])
 
-  const handleEditContact = () => {
+  const handleEditContact = useCallback(() => {
     if (selectedContact) {
       setEditingContact(selectedContact)
     }
-  }
+  }, [selectedContact])
 
-  const handleSaveContact = async (contact: IContact) => {
+  const handleSaveContact = useCallback(async (contact: IContact) => {
     try {
       await axios.put(`${baseUrl}/${contact.id}`, { contact })
       
@@ -72,44 +73,95 @@ function ContactBook() {
     } catch (err) {
       console.error('Error saving contact', err)
     }
-  }
+  }, [])
 
-  const handleCancelEdit = () => {
+  const handleCancelEdit = useCallback(() => {
     setEditingContact(null)
-  }
+  }, [])
+
+  const handleAddContact = useCallback(() => {
+    setIsAddingContact(true)
+    setSelectedContact(null)
+    setEditingContact(null)
+  }, [])
+
+  const handleCreateContact = useCallback(async (contact: IContact) => {
+    try {
+      const response = await axios.post(`${baseUrl}`, { contact })
+      const newContactId = response.data
+      
+      setShortContacts(prev => [
+        ...prev,
+        { id: newContactId, firstName: contact.firstName, lastName: contact.lastName }
+      ])
+      
+      setIsAddingContact(false)
+      
+    } catch (err) {
+      console.error('Error creating contact', err)
+      alert('Failed to create contact')
+    }
+  }, [])
+  
+  const handleCancelCreate = useCallback(() => {
+    setIsAddingContact(false)
+  }, [])
+
+  const handleDeleteContact = useCallback(async (contactId: number) => {
+    try {
+      await axios.delete(`${baseUrl}/${contactId}`)
+      
+      setShortContacts(prev => prev.filter(c => c.id !== contactId))
+      setSelectedContact(null)
+      
+    } catch (err) {
+      console.error('Error deleting contact', err)
+      alert('Failed to delete contact')
+    }
+  }, [])
 
   return (
     <div className='container'>
       <div className='left-panel'>
         <ContactSearch onSearchTermChange={handleSearchTermChange} />
+
+        <button onClick={handleAddContact}>Add Contact</button>
+
         {filteredContacts.map(contact => (
           <ContactItem
             key={contact.id}
             firstName={contact.firstName}
             lastName={contact.lastName}
             isSelected={selectedContact?.id === contact.id}
-            onClick={() => handleSelectContact(contact.id)}
+            contactId={contact.id}
+            onSelect={handleSelectContact}
           />
         ))}
       </div>
 
       <div className='right-panel'>
-        {selectedContact ? (
-          editingContact ? (
-            <ContactForm 
-              contact={editingContact}
-              onSave={handleSaveContact}
-              onCancel={handleCancelEdit}
-            />
-          ) : (
-            <ContactDetail 
-              contact={selectedContact} 
-              onEdit={handleEditContact}
-            />
-          )
+        {isAddingContact ? (
+          <ContactForm 
+            mode="create"
+            onSave={handleCreateContact}
+            onCancel={handleCancelCreate}
+          />
+        ) : editingContact ? (
+          <ContactForm 
+            mode="edit"
+            contact={editingContact}
+            onSave={handleSaveContact}
+            onCancel={handleCancelEdit}
+          />
+        ) : selectedContact ? (
+          <ContactDetail 
+            contact={selectedContact} 
+            onEdit={handleEditContact}
+            onDelete={handleDeleteContact}
+          />
         ) : (
           <div className="no-contact-selected">
-            Select contact to see detailed information
+            There are no contacts to display!
           </div>
         )}
       </div>

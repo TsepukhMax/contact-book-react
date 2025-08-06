@@ -14,10 +14,20 @@
       text-align: center;
     }
 
-    .btn-edit {
+    .contact-actions {
       position: absolute;
       top: 0;
       right: 0;
+      display: flex;
+      gap: 10px;
+
+      .btn-delete {
+        background-color: #c72838;
+        
+        &:hover {
+          background-color: #ff0000;
+        }
+      }
     }
   }
 
