@@ -1,38 +1,28 @@
 import React from 'react'
 import { useForm } from 'react-hook-form'
-import { IContact, IContactFormProps } from '../../interfaces'
+import { ContactFormData, IContactFormProps } from '../../interfaces'
 import './contact-form.scss'
 
-function ContactForm({ mode, contact, onSave, onCancel }: IContactFormProps) {
-  const defaultValues = mode === 'create' ? {
+function ContactForm({ contact, onSave, onCancel }: IContactFormProps) {
+  const defaultValues: ContactFormData = contact ?? {
     firstName: '',
     lastName: '',
     phoneNumber: '',
     email: '',
     notes: ''
-  } : contact
+  };
   
-  const {
-    register,
-    handleSubmit,
-    formState: { errors }
-  } = useForm<IContact>({
+  const {register,handleSubmit, formState: { errors }} = useForm<ContactFormData>({
     defaultValues
   })
 
-  const onSubmit = (data: IContact) => {
-    if (mode === 'create') {
-      onSave(data)
-    } else {
-      if (contact) {
-        onSave({ ...data, id: contact.id })
-      }
-    }
+  const onSubmit = (data: ContactFormData) => {
+    onSave( contact ? {...data, id: contact.id} : (data));
   }
 
   return (
     <div className="contact-form">
-      <h2>{mode === 'create' ? 'Add New Contact' : 'Edit Contact'}</h2>
+      <h2>{contact ? 'Edit Contact' : 'Add New Contact'}</h2>
       <form onSubmit={handleSubmit(onSubmit)}>
 
         <div className="form-group">

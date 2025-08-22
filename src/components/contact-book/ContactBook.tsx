@@ -1,10 +1,10 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import './contact-book.scss'
 import ContactSearch from '../contact-search/ContactSearch'
 import ContactItem from '../contact-item/ContactItem'
 import ContactDetail from '../contact-detail/ContactDetail'
 import ContactForm from '../contact-form/ContactForm'
-import { IContact, IContactShort } from '../../interfaces'
+import { ContactFormData, IContact, IContactShort } from '../../interfaces'
 import { getFullName } from '../../utils'
 import axios from 'axios'
 
@@ -13,9 +13,10 @@ const baseUrl = 'http://localhost:8080/contacts'
 function ContactBook() {
   const [shortContacts, setShortContacts] = useState<IContactShort[]>([])
   const [selectedContact, setSelectedContact] = useState<IContact | null>(null)
-  const [editingContact, setEditingContact] = useState<IContact | null>(null)
+  const [isEditing, setIsEditing] = useState<boolean>(false)
   const [searchTerm, setSearchTerm] = useState<string>('')
-  const [isAddingContact, setIsAddingContact] = useState<boolean>(false)
+  const [showForm, setShowForm] = useState<boolean>(false)
+  const isFetchingRef = useRef(false);
 
   useEffect(() => {
     axios.get(baseUrl)
@@ -24,10 +25,14 @@ function ContactBook() {
   }, [])
 
   const handleSelectContact = useCallback((id: number) => {
+      if (selectedContact?.id === id || isFetchingRef.current) return;
+
+    isFetchingRef.current = true;
     axios.get(`${baseUrl}/${id}`)
       .then(res => setSelectedContact(res.data))
       .catch(err => console.error('Error loading contact by ID', err))
-  }, [])
+      .finally(() => {isFetchingRef.current = false;})
+  }, [selectedContact])
 
   const filteredContacts = useMemo(() => {
     const normalized = searchTerm.trim().toUpperCase()
@@ -50,16 +55,14 @@ function ContactBook() {
   }, [])
 
   const handleEditContact = useCallback(() => {
-    if (selectedContact) {
-      setEditingContact(selectedContact)
-    }
+    if (selectedContact) setIsEditing(true);
   }, [selectedContact])
 
-  const handleSaveContact = useCallback(async (contact: IContact) => {
+  const handleSaveContact = useCallback(async (contact: ContactFormData) => {
     try {
       await axios.put(`${baseUrl}/${contact.id}`, { contact })
       
-      setSelectedContact(contact)
+      setSelectedContact(contact as IContact)
       
       setShortContacts(prev => 
         prev.map(c => 
@@ -69,23 +72,23 @@ function ContactBook() {
         )
       )
     
-      setEditingContact(null)
+      setIsEditing(false);
     } catch (err) {
       console.error('Error saving contact', err)
     }
   }, [])
 
-  const handleCancelEdit = useCallback(() => {
-    setEditingContact(null)
-  }, [])
+  const handleCancelEdit = () => {
+    setIsEditing(false);
+  }
 
-  const handleAddContact = useCallback(() => {
-    setIsAddingContact(true)
+  const handleAddContact = () => {
+    setShowForm(true)
     setSelectedContact(null)
-    setEditingContact(null)
-  }, [])
+    setIsEditing(false);
+  }
 
-  const handleCreateContact = useCallback(async (contact: IContact) => {
+  const handleCreateContact = useCallback(async (contact: ContactFormData) => {
     try {
       const response = await axios.post(`${baseUrl}`, { contact })
       const newContactId = response.data
@@ -95,7 +98,7 @@ function ContactBook() {
         { id: newContactId, firstName: contact.firstName, lastName: contact.lastName }
       ])
       
-      setIsAddingContact(false)
+      setShowForm(false)
       
     } catch (err) {
       console.error('Error creating contact', err)
@@ -103,16 +106,17 @@ function ContactBook() {
     }
   }, [])
   
-  const handleCancelCreate = useCallback(() => {
-    setIsAddingContact(false)
-  }, [])
+  const handleCancelCreate = () => {
+    setShowForm(false)
+  }
 
   const handleDeleteContact = useCallback(async (contactId: number) => {
     try {
       await axios.delete(`${baseUrl}/${contactId}`)
       
-      setShortContacts(prev => prev.filter(c => c.id !== contactId))
-      setSelectedContact(null)
+      setShortContacts(prev => prev.filter(c => c.id !== contactId));
+      setSelectedContact(null);
+      setIsEditing(false);
       
     } catch (err) {
       console.error('Error deleting contact', err)
@@ -126,32 +130,26 @@ function ContactBook() {
         <ContactSearch onSearchTermChange={handleSearchTermChange} />
 
         <button onClick={handleAddContact}>Add Contact</button>
-
-        {filteredContacts.map(contact => (
-          <ContactItem
-            key={contact.id}
-            firstName={contact.firstName}
-            lastName={contact.lastName}
-            isSelected={selectedContact?.id === contact.id}
-            contactId={contact.id}
-            onSelect={handleSelectContact}
-          />
-        ))}
+        <div className='contact-list'>
+          {filteredContacts.map(contact => (
+            <ContactItem
+              key={contact.id}
+              firstName={contact.firstName}
+              lastName={contact.lastName}
+              isSelected={selectedContact?.id === contact.id}
+              contactId={contact.id}
+              onSelect={handleSelectContact}
+            />
+          ))}
+        </div>
       </div>
 
       <div className='right-panel'>
-        {isAddingContact ? (
+        {(showForm || isEditing) ? (
           <ContactForm 
-            mode="create"
-            onSave={handleCreateContact}
-            onCancel={handleCancelCreate}
-          />
-        ) : editingContact ? (
-          <ContactForm 
-            mode="edit"
-            contact={editingContact}
-            onSave={handleSaveContact}
-            onCancel={handleCancelEdit}
+            contact={selectedContact}
+            onSave={selectedContact ? handleSaveContact : handleCreateContact}
+            onCancel={() => setShowForm(false)}
           />
         ) : selectedContact ? (
           <ContactDetail 
@@ -161,7 +159,7 @@ function ContactBook() {
           />
         ) : (
           <div className="no-contact-selected">
-            There are no contacts to display!
+            Select a contact to view details!
           </div>
         )}
       </div>
