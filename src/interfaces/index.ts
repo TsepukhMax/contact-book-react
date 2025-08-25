@@ -27,10 +27,8 @@ export interface IContactDetailProps {
   onDelete: (contactId: number) => void;
 }
 
-export type ContactFormData = Omit<IContact, 'id'> & {id?: number};
-
 export interface IContactFormProps {
   contact: IContact | null
-  onSave: (contact: ContactFormData) => void
+  onSave: (contact: IContact) => void
   onCancel: () => void
 }

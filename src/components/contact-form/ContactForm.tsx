@@ -1,10 +1,10 @@
 import React from 'react'
 import { useForm } from 'react-hook-form'
-import { ContactFormData, IContactFormProps } from '../../interfaces'
+import { IContact, IContactFormProps } from '../../interfaces'
 import './contact-form.scss'
 
 function ContactForm({ contact, onSave, onCancel }: IContactFormProps) {
-  const defaultValues: ContactFormData = contact ?? {
+  const defaultValues: Partial<IContact> = contact ?? {
     firstName: '',
     lastName: '',
     phoneNumber: '',
@@ -12,12 +12,12 @@ function ContactForm({ contact, onSave, onCancel }: IContactFormProps) {
     notes: ''
   };
   
-  const {register,handleSubmit, formState: { errors }} = useForm<ContactFormData>({
+  const {register,handleSubmit, formState: { errors }} = useForm<IContact>({
     defaultValues
   })
 
-  const onSubmit = (data: ContactFormData) => {
-    onSave( contact ? {...data, id: contact.id} : (data));
+  const onSubmit = (data: IContact) => {
+    onSave( contact ? {...data, id: contact.id} : data);
   }
 
   return (

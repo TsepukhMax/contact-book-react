@@ -4,7 +4,7 @@ import ContactSearch from '../contact-search/ContactSearch'
 import ContactItem from '../contact-item/ContactItem'
 import ContactDetail from '../contact-detail/ContactDetail'
 import ContactForm from '../contact-form/ContactForm'
-import { ContactFormData, IContact, IContactShort } from '../../interfaces'
+import { IContact, IContactShort } from '../../interfaces'
 import { getFullName } from '../../utils'
 import axios from 'axios'
 
@@ -13,7 +13,6 @@ const baseUrl = 'http://localhost:8080/contacts'
 function ContactBook() {
   const [shortContacts, setShortContacts] = useState<IContactShort[]>([])
   const [selectedContact, setSelectedContact] = useState<IContact | null>(null)
-  const [isEditing, setIsEditing] = useState<boolean>(false)
   const [searchTerm, setSearchTerm] = useState<string>('')
   const [showForm, setShowForm] = useState<boolean>(false)
   const isFetchingRef = useRef(false);
@@ -25,13 +24,15 @@ function ContactBook() {
   }, [])
 
   const handleSelectContact = useCallback((id: number) => {
-      if (selectedContact?.id === id || isFetchingRef.current) return;
+    setShowForm(false);
+    if (selectedContact?.id === id || isFetchingRef.current) return;
 
     isFetchingRef.current = true;
     axios.get(`${baseUrl}/${id}`)
       .then(res => setSelectedContact(res.data))
       .catch(err => console.error('Error loading contact by ID', err))
       .finally(() => {isFetchingRef.current = false;})
+
   }, [selectedContact])
 
   const filteredContacts = useMemo(() => {
@@ -55,10 +56,10 @@ function ContactBook() {
   }, [])
 
   const handleEditContact = useCallback(() => {
-    if (selectedContact) setIsEditing(true);
+    if (selectedContact) setShowForm(true);
   }, [selectedContact])
 
-  const handleSaveContact = useCallback(async (contact: ContactFormData) => {
+  const handleSaveContact = useCallback(async (contact: IContact) => {
     try {
       await axios.put(`${baseUrl}/${contact.id}`, { contact })
       
@@ -72,23 +73,18 @@ function ContactBook() {
         )
       )
     
-      setIsEditing(false);
+      setShowForm(false);
     } catch (err) {
       console.error('Error saving contact', err)
     }
   }, [])
 
-  const handleCancelEdit = () => {
-    setIsEditing(false);
-  }
-
   const handleAddContact = () => {
     setShowForm(true)
     setSelectedContact(null)
-    setIsEditing(false);
   }
 
-  const handleCreateContact = useCallback(async (contact: ContactFormData) => {
+  const handleCreateContact = useCallback(async (contact: IContact) => {
     try {
       const response = await axios.post(`${baseUrl}`, { contact })
       const newContactId = response.data
@@ -105,10 +101,6 @@ function ContactBook() {
       alert('Failed to create contact')
     }
   }, [])
-  
-  const handleCancelCreate = () => {
-    setShowForm(false)
-  }
 
   const handleDeleteContact = useCallback(async (contactId: number) => {
     try {
@@ -116,7 +108,6 @@ function ContactBook() {
       
       setShortContacts(prev => prev.filter(c => c.id !== contactId));
       setSelectedContact(null);
-      setIsEditing(false);
       
     } catch (err) {
       console.error('Error deleting contact', err)
@@ -129,7 +120,7 @@ function ContactBook() {
       <div className='left-panel'>
         <ContactSearch onSearchTermChange={handleSearchTermChange} />
 
-        <button onClick={handleAddContact}>Add Contact</button>
+        <button className='add-contact' onClick={handleAddContact}>Add Contact</button>
         <div className='contact-list'>
           {filteredContacts.map(contact => (
             <ContactItem
@@ -145,7 +136,7 @@ function ContactBook() {
       </div>
 
       <div className='right-panel'>
-        {(showForm || isEditing) ? (
+        {showForm ? (
           <ContactForm 
             contact={selectedContact}
             onSave={selectedContact ? handleSaveContact : handleCreateContact}
